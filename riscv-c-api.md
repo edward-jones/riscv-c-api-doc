@@ -118,3 +118,26 @@ For example:
 
 Do we really have none of these?  I can't figure out
 `gcc/gcc/config/riscv/riscv-builtins.c`...
+
+## Runtime Library Functions
+
+### Save restore
+
+The save restore optimization is enabled through the option `-msave-restore`
+and reduces the amount of code in the prologue and epilogue by using
+library functions instead of inline code to save and restore callee saved
+registers. The library functions are provided in the emulation library and
+have the following signatures:
+
+* `void __riscv_save_<N>(void)`
+* `void __riscv_restore_<N>(void)`
+
+`<N>` is a value between 0 and 12 and corresponds to the number of
+registers between `s0` and `s11` that are saved/restored. The return
+address register `ra` is always included in the registers saved and restored.
+
+The `__riscv_save_<N>` functions are called from the prologue. They allocate
+stack space for the registers and then save `ra` and the appropriate number
+of registers from `s0`-`s11`. The `__riscv_restore_<N>` functions are called
+from just before the return instruction in the epilogue and restore the
+registers and stack pointer.
